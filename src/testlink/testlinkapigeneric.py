@@ -681,7 +681,7 @@ TL version >= 1.9.11
     def getTestSuiteByID(self):
         """ Return a TestSuite by ID """
 
-    @decoMakerApiCallReplaceTLResponseError()            
+    @decoMakerApiCallReplaceTLResponseError()
     @decoApiCallAddDevKey               
     @decoMakerApiCallWithArgs(['testsuiteid'])
     def getTestSuitesForTestSuite(self):
@@ -1649,7 +1649,7 @@ TL version >= 1.9.11
 #   * @param
 #   * @param struct $args
 #   * @param string $args["devKey"]
-#   * @param int $args["testsuitename"]
+#   * @param string $args["testsuitename"]
 #   * @param string $args["prefix"]
 #   * @return mixed $resultInfo
 #   * 
@@ -1659,7 +1659,7 @@ TL version >= 1.9.11
 
     @decoApiCallAddDevKey               
     @decoMakerApiCallWithArgs(['testsuitename', 'prefix'])
-    def getTestSuite(self):
+    def getTestSuiteByName(self):
         """ Returns list with all test suites named TESTUITENAME defined for
         test project using PREFIX """
 
@@ -1712,6 +1712,7 @@ TL version >= 1.9.11
     @decoMakerApiCallWithArgs(['itsname'], [])
     def getIssueTrackerSystem(self):
         """ Get Issue Tracker System by name """
+
 
 # /**
 #  * Update value of Custom Field with scope='design'
