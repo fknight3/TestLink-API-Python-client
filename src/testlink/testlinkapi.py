@@ -498,7 +498,7 @@ class TestlinkAPIClient(TestlinkAPIGeneric):
                 break
         return result
 
-    def bulkTestCaseUpload(self, login, file):
+    def bulkTestCaseUpload(self, login, file, testlink_params=False):
         testSuite = self._parseFileToObject(file)
         testSuite['project_id'] = self.getProjectIDByName(testSuite['project_name'])
         if testSuite['project_id'] is -1:
@@ -516,16 +516,17 @@ class TestlinkAPIClient(TestlinkAPIGeneric):
                 optArgValues = {'steps': testCase['steps']}
                 response = self.createTestCase(*posArgValues, **optArgValues)
 
-                postArgValues = [testSuite['custom_data']['project_prefix'] + response[0]['additionalInfo']['external_id'], 1, 1,
-                                 {"Automation Type": testSuite['custom_data']['automation_type']}]
                 # Upload additional parameters if they are
-                if 'custom_data' in testSuite:
-                    if 'jira_story' in testSuite['custom_data']:
-                        postArgValues[3]['JIRA Story'] = testSuite['custom_data']['jira_story']
+                if testlink_params:
+                    postArgValues = [
+                        testlink_params['project_prefix'] + response[0]['additionalInfo']['external_id'], 1, 1,
+                        {"Automation Type": testlink_params['automation_type']}]
+                    if 'jira_story' in testlink_params:
+                        postArgValues[3]['JIRA Story'] = testlink_params['jira_story']
                     self.updateTestCaseCustomFieldDesignValue(*postArgValues)
-                    if 'keywords' in testSuite['custom_data']:
-                        self.addTestCaseKeywords({testSuite['custom_data']['project_prefix'] + response[0]['additionalInfo']['external_id']:
-                                                      testSuite['custom_data']['keywords']})
+                    if 'keywords' in testlink_params:
+                        self.addTestCaseKeywords({testlink_params['project_prefix'] + response[0]['additionalInfo']['external_id']:
+                                                      testlink_params['keywords']})
                 i += 1
         if i == 0:
             print('There were no test cases to upload' + '\nBulk Test Upload Complete')
@@ -544,9 +545,6 @@ class TestlinkAPIClient(TestlinkAPIGeneric):
         testSuite['ClassData'] = (re.search("(#.*\n?)+\nclass\s*\w*", file).group(0).split('class '))
         testSuite['Summary'] = testSuite['ClassData'][0].lstrip().replace('#', '').replace('\n', '')
         testSuite['Name'] = path.split('/')[-1].strip('.py')
-        if re.search("testlink_params = {.*\n?.*}", file) != None:
-            testSuite['custom_data'] = ast.literal_eval(re.search("testlink_params = {.*\n?.*}", file)
-                                                        .group(0).split(" = ")[1])
         testcaseStrings = re.findall("((# .*)\n\t?(....)?((# .*)\n\t?(....)?)?#\n\t?(....)?# Expected:(.*)\n\t?(....)?"
                                      "((# .*)\n\t?(....)?)?def test(_\w*))", file)
         testSuite['testCases'] = []
