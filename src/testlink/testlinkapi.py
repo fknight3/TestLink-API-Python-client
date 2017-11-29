@@ -538,7 +538,7 @@ class TestlinkAPIClient(TestlinkAPIGeneric):
 		file = open(path, 'r').read()
 		testSuite = {}
 		tree_path = re.search("set_tree_path = ({.*?}|\[.*?\])", file).group(0)
-		testSuite['tree_path'] = re.findall(r"\w+\s?\w*", tree_path)
+		testSuite['tree_path'] = re.findall(r"\w+-?_?\s?\w*", tree_path)
 		testSuite['tree_path'].pop(0)
 		testSuite['project_name'] = testSuite['tree_path'][0]
 		# Delete the project_name form the tree path since it isn't a top_level_folder
