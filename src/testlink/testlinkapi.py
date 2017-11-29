@@ -537,7 +537,7 @@ class TestlinkAPIClient(TestlinkAPIGeneric):
 	def _parseFileToObject(self, path):
 		file = open(path, 'r').read()
 		testSuite = {}
-		tree_path = re.search("set_tree_path = \[.*?\]", file).group(0)
+		tree_path = re.search("set_tree_path = ({.*?}|\[.*?\])", file).group(0)
 		testSuite['tree_path'] = re.findall(r"\w+\s?\w*", tree_path)
 		testSuite['tree_path'].pop(0)
 		testSuite['project_name'] = testSuite['tree_path'][0]
