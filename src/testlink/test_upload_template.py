@@ -12,4 +12,3 @@ TESTLINK_API_PYTHON_SERVER_URL= ""
 
 tls = testlink.TestLinkHelper().connect(testlink.TestlinkAPIClient)
 #tls.bulkTestCaseUpload(username, test file full path, testlinkparams)
-tls.bulkTestCaseUpload('fred.knight', '/home/fred.knight/test-automation/android_view_client/mc_android/test_android_pam_ldap.py', TestAndroidStatusBar.testlink_params)
