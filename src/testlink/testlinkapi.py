@@ -545,7 +545,7 @@ class TestlinkAPIClient(TestlinkAPIGeneric):
 		testSuite['tree_path'].pop(0)
 		testSuite['ClassData'] = (re.search("(#.*\n?)+\nclass\s*\w*", file).group(0).split('class '))
 		testSuite['Summary'] = testSuite['ClassData'][0].lstrip().replace('#', '').replace('\n', '')
-		testSuite['Name'] = path.split('/')[-1].strip('.py')
+		testSuite['Name'] = re.search('class \w+', file).group(0).split(" ")[1]
 		testcaseStrings = re.findall("((((# .*)\n)\t?(....)?)+(#\n\t?(....)?)(((# .*)\n\t?)(....)?)+(def test(_\w*)))", file)
 		testSuite['testCases'] = []
 		for testCase in testcaseStrings:
