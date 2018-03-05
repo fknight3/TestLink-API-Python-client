@@ -4,7 +4,7 @@
 #  Copyright 2011-2017 Luiko Czub, Olivier Renault, James Stock, TestLink-API-Python-client developers
 #
 #  Licensed under the Apache License, Version 2.0 (the "License");
-#  you may not use this file except in compliance with the License.
+#  you may not use this file_contents except in compliance with the License.
 #  You may obtain a copy of the License at
 #
 #       http://www.apache.org/licenses/LICENSE-2.0
@@ -498,8 +498,8 @@ class TestlinkAPIClient(TestlinkAPIGeneric):
 				break
 		return result
 
-	def bulkTestCaseUpload(self, login, file, testlink_params=False):
-		testSuite = self._parseFileToObject(file)
+	def bulkTestCaseUpload(self, login, file_contents, testfile_class):
+		testSuite = self._parseFileToObject(testfile_class.set_tree_path, file_contents)
 		testSuite['project_id'] = self.getProjectIDByName(testSuite['project_name'])
 		if testSuite['project_id'] is -1:
 			print("Error: #{testSuite['project_name']} entered does not exist in TestLink.")
@@ -517,36 +517,34 @@ class TestlinkAPIClient(TestlinkAPIGeneric):
 				response = self.createTestCase(*posArgValues, **optArgValues)
 
 				# Upload additional parameters if they are
-				if testlink_params:
+				if testfile_class.testlink_params:
 					postArgValues = [
-						testlink_params['project_prefix'] + response[0]['additionalInfo']['external_id'], 1, 1,
-						{"Automation Type": testlink_params['automation_type']}]
-					if 'jira_story' in testlink_params:
-						postArgValues[3]['JIRA Story'] = testlink_params['jira_story']
+						testfile_class.testlink_params['project_prefix'] + response[0]['additionalInfo']['external_id'], 1, 1,
+						{"Automation Type": testfile_class.testlink_params['automation_type']}]
+					if 'jira_story' in testfile_class.testlink_params:
+						postArgValues[3]['JIRA Story'] = testfile_class.testlink_params['jira_story']
 					self.updateTestCaseCustomFieldDesignValue(*postArgValues)
-					if 'keywords' in testlink_params:
+					if 'keywords' in testfile_class.testlink_params:
 						self.addTestCaseKeywords(
-							{testlink_params['project_prefix'] + response[0]['additionalInfo']['external_id']:
-								 testlink_params['keywords']})
+							{testfile_class.testlink_params['project_prefix'] + response[0]['additionalInfo']['external_id']:
+								 testfile_class.testlink_params['keywords']})
 				i += 1
 		if i == 0:
 			print('There were no test cases to upload' + '\nBulk Test Upload Complete')
 		else:
 			print('[' + str(i) + ']' + ' Test Cases Created in TestLink' + '\nBulk Test Upload Complete')
 
-	def _parseFileToObject(self, path):
-		file = open(path, 'r').read()
+	def _parseFileToObject(self, tree_path, path):
+		file_contents = open(path, 'r').read()
 		testSuite = {}
-		tree_path = re.search("set_tree_path = ({.*?}|\[.*?\])", file).group(0)
-		testSuite['tree_path'] = re.findall(r"\w+-?_?\s?\w*", tree_path)
-		testSuite['tree_path'].pop(0)
+		testSuite['tree_path'] = tree_path
 		testSuite['project_name'] = testSuite['tree_path'][0]
-		# Delete the project_name form the tree path since it isn't a top_level_folder
 		testSuite['tree_path'].pop(0)
-		testSuite['ClassData'] = (re.search("(#.*\n?)+\nclass\s*\w*", file).group(0).split('class '))
+		# Delete the project_name form the tree path since it isn't a top_level_folder
+		testSuite['ClassData'] = (re.search("(#.*\n?)+\nclass\s*\w*", file_contents).group(0).split('class '))
 		testSuite['Summary'] = testSuite['ClassData'][0].lstrip().replace('#', '').replace('\n', '')
-		testSuite['Name'] = re.search('class \w+', file).group(0).split(" ")[1]
-		testcaseStrings = re.findall("((((# .*)\n)\t?(....)?)+(#\n\t?(....)?)(((# .*)\n\t?)(....)?)+(def test(_\w*)))", file)
+		testSuite['Name'] = re.search('class \w+', file_contents).group(0).split(" ")[1]
+		testcaseStrings = re.findall("((((# .*)\n)\t?(....)?)+(#\n\t?(....)?)(((# .*)\n\t?)(....)?)+(def test(_\w*)))", file_contents)
 		testSuite['testCases'] = []
 		for testCase in testcaseStrings:
 			case = {}
@@ -566,13 +564,13 @@ class TestlinkAPIClient(TestlinkAPIGeneric):
 		self._expandTreePath(project_id, testSuite)
 		# Get all the test suites (test files) in the lowest folder
 		parent = self.getTestSuitesForTestSuite(int(testSuite['tree_path'][-1]['id']))
-		# If there are none, add the test file
+		# If there are none, add the test file_contents
 		if not parent:
 			return self._createTestCase(testSuite, project_id)
-		# In cases where one test case exists, a dictionary is returned from testlinkapi
-		elif len(parent) == 0:
+		# In cases where one test suite exists, a dictionary is returned from testlinkapi
+		elif 'parent_id' in parent: ##  bool(type(parent).__name__ == 'dict')
 			return parent['id']
-		# Case when there are multiple test cases returned from testlink
+		# Case when there are multiple test suites returned from testlink
 		else:
 			result = filter(lambda suite: suite['name'] == testSuite['Name'], parent.values())
 			if len(result) == 0:
