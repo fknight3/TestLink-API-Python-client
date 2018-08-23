@@ -519,14 +519,16 @@ class TestlinkAPIClient(TestlinkAPIGeneric):
 				# Upload additional parameters if they are
 				if testfile_class.testlink_params:
 					postArgValues = [
-						testfile_class.testlink_params['project_prefix'] + response[0]['additionalInfo']['external_id'], 1, 1,
+						testfile_class.testlink_params['project_prefix'] + response[0]['additionalInfo']['external_id'],
+						1, 1,
 						{"Automation Type": testfile_class.testlink_params['automation_type']}]
 					if 'jira_story' in testfile_class.testlink_params:
 						postArgValues[3]['JIRA Story'] = testfile_class.testlink_params['jira_story']
 					self.updateTestCaseCustomFieldDesignValue(*postArgValues)
 					if 'keywords' in testfile_class.testlink_params:
 						self.addTestCaseKeywords(
-							{testfile_class.testlink_params['project_prefix'] + response[0]['additionalInfo']['external_id']:
+							{testfile_class.testlink_params['project_prefix'] + response[0]['additionalInfo'][
+								'external_id']:
 								 testfile_class.testlink_params['keywords']})
 				i += 1
 		if i == 0:
@@ -544,11 +546,12 @@ class TestlinkAPIClient(TestlinkAPIGeneric):
 		testSuite['ClassData'] = (re.search("(#.*\n?)+\nclass\s*\w*", file_contents).group(0).split('class '))
 		testSuite['Summary'] = testSuite['ClassData'][0].lstrip().replace('#', '').replace('\n', '')
 		testSuite['Name'] = re.search('class \w+', file_contents).group(0).split(" ")[1]
-		testcaseStrings = re.findall("((((# .*)\n)\t?(....)?)+(#\n\t?(....)?)(((# .*)\n\t?)(....)?)+(def test(_\w*)))", file_contents)
+		testcaseStrings = re.findall("((((# .*)\n)\t?(....)?)+(#\n\t?(....)?)(((# .*)\n\t?)(....)?)+(def test(_\w*)))",
+									 file_contents)
 		testSuite['testCases'] = []
 		for testCase in testcaseStrings:
 			case = {}
-			temp = re.split('(#\n\t?(....)?)', testCase[0])
+			temp = re.split('(#\n\t?(..)?)', testCase[0])
 			temp1 = re.split(r'(def test(_\w*))', temp[3])
 			name = temp1[1].replace('def ', '').replace('\n', '')
 			actions = re.sub(r'\s+', ' ', temp[0].replace('# ', '').replace('\n', '').replace('#', ''))
@@ -558,19 +561,20 @@ class TestlinkAPIClient(TestlinkAPIGeneric):
 			testSuite['testCases'].append(case)
 		return testSuite
 
-
 	def getOrCreateTestSuite(self, project_id, testSuite):
 		# Get the Suite ID's etc for each Test Suite Folder in the path
 		self._expandTreePath(project_id, testSuite)
 		# Get all the test suites (test files) in the lowest folder
 		parent = self.getTestSuitesForTestSuite(int(testSuite['tree_path'][-1]['id']))
-		# If there are none, add the test file_contents
+		# If there are none, create one
 		if not parent:
 			return self._createTestCase(testSuite, project_id)
 		# In cases where one test suite exists, a dictionary is returned from testlinkapi
-		elif 'parent_id' in parent: ##  bool(type(parent).__name__ == 'dict')
-			return parent['id']
-		# Case when there are multiple test suites returned from testlink
+		elif 'parent_id' in parent:
+			if parent['name'] == testSuite['Name']:
+				return parent['id']
+			else:
+				return self._createTestCase(testSuite, project_id)
 		else:
 			result = filter(lambda suite: suite['name'] == testSuite['Name'], parent.values())
 			if len(result) == 0:
@@ -578,13 +582,11 @@ class TestlinkAPIClient(TestlinkAPIGeneric):
 			else:
 				return result[0]['id']
 
-
 	def _createTestCase(self, testSuite, project_id):
 		posArgValues = [project_id, testSuite['Name'], testSuite['Summary']]
 		optArgValues = {'parentid': testSuite['tree_path'][-1]['id']}
 		result = self.createTestSuite(*posArgValues, **optArgValues)[0]
 		return result['id']
-
 
 	def _expandTreePath(self, project_id, testSuite):
 		i = 0
