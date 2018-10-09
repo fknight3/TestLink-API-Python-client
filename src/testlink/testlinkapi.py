@@ -510,7 +510,7 @@ class TestlinkAPIClient(TestlinkAPIGeneric):
 		for testCase in testSuite['testCases']:
 			# Search external list for the test case, if it isn't there add it
 			# If the case does not exist add it.
-			if len(filter(lambda case: case['name'] == testCase['name'], remoteHostTestCases)) == 0:
+			if len(list(filter(lambda case: case['name'] == testCase['name'], remoteHostTestCases))) == 0:
 				posArgValues = [testCase['name'], testSuite['id'], testSuite['project_id'], login,
 								'Test from Test/Unit TestCases']
 				optArgValues = {'steps': testCase['steps']}
@@ -576,7 +576,7 @@ class TestlinkAPIClient(TestlinkAPIGeneric):
 			else:
 				return self._createTestCase(testSuite, project_id)
 		else:
-			result = filter(lambda suite: suite['name'] == testSuite['Name'], parent.values())
+			result = list(filter(lambda suite: suite['name'] == testSuite['Name'], parent.values()))
 			if len(result) == 0:
 				return self._createTestCase(testSuite, project_id)
 			else:
@@ -597,7 +597,7 @@ class TestlinkAPIClient(TestlinkAPIGeneric):
 					print(testSuite['project_name'] + ' does not have any Test Suites.' +
 						  '\nPlease add the first level of Test Suites')
 					sys.exit()
-				testSuite['tree_path'][i] = filter(lambda suite: suite['name'] == folder, top_level_suites)[0]
+				testSuite['tree_path'][i] = list(filter(lambda suite: suite['name'] == folder, top_level_suites))[0]
 			else:
 				parent = self.getTestSuitesForTestSuite(testSuite['tree_path'][i - 1]['id'])
 				# First level test suite, the parent is always the project_id
@@ -606,7 +606,7 @@ class TestlinkAPIClient(TestlinkAPIGeneric):
 					testSuite['tree_path'][i] = parent
 				# Handles the case when the API returns multiple results (Folder doesn't exist and multiple responses)
 				else:
-					result = filter(lambda suite: suite['name'] == folder, parent.values())
+					result = list(filter(lambda suite: suite['name'] == folder, parent.values()))
 					# The response value will be zero if there is not a match. Add the folder to TestLink
 					if len(result) == 0:
 						print('Unable to find folder in TestLink. Creating New Folder ' + folder +
@@ -622,7 +622,7 @@ class TestlinkAPIClient(TestlinkAPIGeneric):
 						else:
 							print('Unable to create the Test Suite: ' + testSuite['tree_path'][i]['message'])
 					else:
-						testSuite['tree_path'][i] = filter(lambda suite: suite['name'] == folder, parent.values())[0]
+						testSuite['tree_path'][i] = list(filter(lambda suite: suite['name'] == folder, parent.values()))[0]
 			i += 1
 
 
