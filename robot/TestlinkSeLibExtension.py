@@ -17,6 +17,7 @@
 #
 # ------------------------------------------------------------------------
 
+from builtins import object
 from robot.libraries.BuiltIn import BuiltIn
 
 class TestlinkSeLibExtension(object):

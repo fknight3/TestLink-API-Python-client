@@ -17,14 +17,16 @@
 #
 # ------------------------------------------------------------------------
 
+from future import standard_library
+standard_library.install_aliases()
 import sys
 IS_PY3 = sys.version_info[0] > 2
 if IS_PY3:
     from xmlrpc.client import Transport
     from http.client import HTTPConnection
 else:
-    from xmlrpclib import Transport
-    from httplib import HTTPConnection
+    from xmlrpc.client import Transport
+    from http.client import HTTPConnection
     
 try:
     import gzip
@@ -101,6 +103,6 @@ class ProxiedTransport(Transport):
         extra_headers = self._extra_headers
         if extra_headers:
             if isinstance(extra_headers, dict()):
-                extra_headers = extra_headers.items()
+                extra_headers = list(extra_headers.items())
             for key, value in extra_headers:
                 connection.putheader(key, value)

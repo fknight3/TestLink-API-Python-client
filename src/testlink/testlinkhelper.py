@@ -17,6 +17,7 @@
 #
 # ------------------------------------------------------------------------
 
+from builtins import object
 import os
 from argparse import ArgumentParser
 from .version import VERSION

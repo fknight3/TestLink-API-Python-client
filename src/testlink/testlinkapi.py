@@ -20,6 +20,8 @@
 # import xmlrpclib
 
 from __future__ import print_function
+from builtins import str
+from builtins import map
 from .testlinkapigeneric import TestlinkAPIGeneric, TestLinkHelper
 from .testlinkerrors import TLArgError
 import sys
@@ -341,7 +343,7 @@ class TestlinkAPIClient(TestlinkAPIGeneric):
 		# key is the testcaseid, why that? cause it is possible to ask for
 		# a set of test cases.  we are just interested in one tc
 		a_keyword_dic = self.getTestCaseKeywords(testcaseid=a_tc_id)[a_tc_id]
-		keywords = a_keyword_dic.values()
+		keywords = list(a_keyword_dic.values())
 
 		return list(keywords)
 
@@ -358,9 +360,9 @@ class TestlinkAPIClient(TestlinkAPIGeneric):
 			tc_id = a_ts_tc['id']
 			keyword_details = a_ts_tc.get('keywords', {})
 			if sys.version_info[0] < 3:
-				keywords = map((lambda x: x['keyword']), keyword_details.values())
+				keywords = list(map((lambda x: x['keyword']), list(keyword_details.values())))
 			else:
-				keywords = [kw['keyword'] for kw in keyword_details.values()]
+				keywords = [kw['keyword'] for kw in list(keyword_details.values())]
 			response[tc_id] = keywords
 
 		return response
@@ -510,7 +512,7 @@ class TestlinkAPIClient(TestlinkAPIGeneric):
 		for testCase in testSuite['testCases']:
 			# Search external list for the test case, if it isn't there add it
 			# If the case does not exist add it.
-			if len(list(filter(lambda case: case['name'] == testCase['name'], remoteHostTestCases))) == 0:
+			if len(list([case for case in remoteHostTestCases if case['name'] == testCase['name']])) == 0:
 				posArgValues = [testCase['name'], testSuite['id'], testSuite['project_id'], login,
 								'Test from Test/Unit TestCases']
 				optArgValues = {'steps': testCase['steps']}
@@ -576,7 +578,7 @@ class TestlinkAPIClient(TestlinkAPIGeneric):
 			else:
 				return self._createTestCase(testSuite, project_id)
 		else:
-			result = list(filter(lambda suite: suite['name'] == testSuite['Name'], parent.values()))
+			result = list([suite for suite in list(parent.values()) if suite['name'] == testSuite['Name']])
 			if len(result) == 0:
 				return self._createTestCase(testSuite, project_id)
 			else:
@@ -597,7 +599,7 @@ class TestlinkAPIClient(TestlinkAPIGeneric):
 					print(testSuite['project_name'] + ' does not have any Test Suites.' +
 						  '\nPlease add the first level of Test Suites')
 					sys.exit()
-				testSuite['tree_path'][i] = list(filter(lambda suite: suite['name'] == folder, top_level_suites))[0]
+				testSuite['tree_path'][i] = list([suite for suite in top_level_suites if suite['name'] == folder])[0]
 			else:
 				parent = self.getTestSuitesForTestSuite(testSuite['tree_path'][i - 1]['id'])
 				# First level test suite, the parent is always the project_id
@@ -606,7 +608,7 @@ class TestlinkAPIClient(TestlinkAPIGeneric):
 					testSuite['tree_path'][i] = parent
 				# Handles the case when the API returns multiple results (Folder doesn't exist and multiple responses)
 				else:
-					result = list(filter(lambda suite: suite['name'] == folder, parent.values()))
+					result = list([suite for suite in list(parent.values()) if suite['name'] == folder])
 					# The response value will be zero if there is not a match. Add the folder to TestLink
 					if len(result) == 0:
 						print('Unable to find folder in TestLink. Creating New Folder ' + folder +
@@ -622,7 +624,7 @@ class TestlinkAPIClient(TestlinkAPIGeneric):
 						else:
 							print('Unable to create the Test Suite: ' + testSuite['tree_path'][i]['message'])
 					else:
-						testSuite['tree_path'][i] = list(filter(lambda suite: suite['name'] == folder, parent.values()))[0]
+						testSuite['tree_path'][i] = list([suite for suite in list(parent.values()) if suite['name'] == folder])[0]
 			i += 1
 
 

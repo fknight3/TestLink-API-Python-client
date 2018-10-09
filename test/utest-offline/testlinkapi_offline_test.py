@@ -20,6 +20,7 @@
 # this test works WITHOUT an online TestLink Server
 # no calls are send to a TestLink Server
 
+from builtins import str
 import sys
 
 IS_PY26 = False

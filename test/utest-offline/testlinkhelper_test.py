@@ -20,6 +20,7 @@
 # this test works WITHOUT an online TestLink Server
 # no calls are send to a TestLink Server
 
+from builtins import object
 import unittest
 import os
 import sys

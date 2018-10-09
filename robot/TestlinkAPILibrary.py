@@ -18,6 +18,7 @@
 # ------------------------------------------------------------------------
 
 
+from builtins import object
 from testlink import TestlinkAPIGeneric, TestlinkAPIClient, TestLinkHelper
 
 
