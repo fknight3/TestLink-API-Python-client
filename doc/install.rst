@@ -42,7 +42,7 @@ The source code can be retrieved as source distribution either
 
 Install the archives using pip by running::
 
- pip install TestLink-API-Python-client-0.6.3.zip
+ pip install TestLink-API-Python-client-0.6.9.zip
     
 Installing from source
 ----------------------    
