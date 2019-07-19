@@ -533,10 +533,7 @@ class TestlinkAPIClient(TestlinkAPIGeneric):
 								'external_id']:
 								 testfile_class.testlink_params['keywords']})
 				i += 1
-		if i == 0:
-			print('There were no test cases to upload' + '\nBulk Test Upload Complete')
-		else:
-			print('[' + str(i) + ']' + ' Test Cases Created in TestLink' + '\nBulk Test Upload Complete')
+		return i
 
 	def _parseFileToObject(self, tree_path, path):
 		file_contents = open(path, 'r').read()
