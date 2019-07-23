@@ -517,7 +517,7 @@ class TestlinkAPIClient(TestlinkAPIGeneric):
                          case['name'] == testCase['name']])) == 0:
                 posArgValues = [testCase['name'], testSuite['id'], testSuite['project_id'], login,
                                 'Test from Test/Unit TestCases']
-                optArgValues = {'steps': testCase['steps']}
+                optArgValues = {'executiontype':2, 'steps': testCase['steps']}
                 response = self.createTestCase(*posArgValues, **optArgValues)
 
                 # Upload additional parameters if they are
