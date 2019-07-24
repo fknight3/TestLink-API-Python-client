@@ -517,7 +517,7 @@ class TestlinkAPIClient(TestlinkAPIGeneric):
                          case['name'] == testCase['name']])) == 0:
                 posArgValues = [testCase['name'], testSuite['id'], testSuite['project_id'], login,
                                 'Test from Test/Unit TestCases']
-                optArgValues = {'executiontype':2, 'steps': testCase['steps']}
+                optArgValues = {'executiontype': 2, 'steps': testCase['steps']}
                 response = self.createTestCase(*posArgValues, **optArgValues)
 
                 # Upload additional parameters if they are
@@ -608,19 +608,29 @@ class TestlinkAPIClient(TestlinkAPIGeneric):
                           '\nPlease add the first level of Test Suites')
                     sys.exit()
                 testSuite['tree_path'][i] = \
-                list([suite for suite in top_level_suites if suite['name'] == folder])[0]
+                    list([suite for suite in top_level_suites if suite['name'] == folder])[0]
             else:
                 parent = self.getTestSuitesForTestSuite(testSuite['tree_path'][i - 1]['id'])
-                # First level test suite, the parent is always the project_id
-                # In the case that testlink returns a single dict. This is the case where one folder exists
-                if 'id' in parent.keys():
+                # Case: The TestSuite is empty
+                # TestLink returns an empty list
+                if isinstance(parent, list):
+                    posArgValues = [project_id, folder, 'Created via TestLink Uploader']
+                    optArgValues = {'parentid': testSuite['tree_path'][i - 1]['id']}
+                    testSuite['tree_path'][i] = \
+                        self.createTestSuite(*posArgValues, **optArgValues)[0]
+                    # since testlink doesnt return name - reset it
+                    testSuite['tree_path'][i]['name'] = folder
+                # Case:
+                # The TestSuite contains only one subfolder or test case
+                # TestLink returns a dictionary of the parameters
+                elif 'id' in parent.keys():
                     if (parent['name'] == testSuite['tree_path'][i]):
                         testSuite['tree_path'][i] = parent
                     else:
                         posArgValues = [project_id, folder, 'Created via TestLink Uploader']
                         optArgValues = {'parentid': testSuite['tree_path'][i - 1]['id']}
                         testSuite['tree_path'][i] = \
-                        self.createTestSuite(*posArgValues, **optArgValues)[0]
+                            self.createTestSuite(*posArgValues, **optArgValues)[0]
                         testSuite['tree_path'][i]['name'] = folder
                 # Handles the case when the API returns multiple results (Folder doesn't exist and multiple responses)
                 else:
@@ -631,7 +641,7 @@ class TestlinkAPIClient(TestlinkAPIGeneric):
                         posArgValues = [project_id, folder, 'Created via TestLink Uploader']
                         optArgValues = {'parentid': testSuite['tree_path'][i - 1]['id']}
                         testSuite['tree_path'][i] = \
-                        self.createTestSuite(*posArgValues, **optArgValues)[0]
+                            self.createTestSuite(*posArgValues, **optArgValues)[0]
                         # since testlink doesnt return name - reset it
                         testSuite['tree_path'][i]['name'] = folder
 
