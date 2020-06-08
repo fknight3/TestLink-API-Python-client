@@ -51,7 +51,7 @@ class TestlinkAPIClient(TestlinkAPIGeneric):
     __author__ = 'Luiko Czub, Olivier Renault, James Stock, TestLink-API-Python-client developers'
 
     def __init__(self, server_url, devKey, **kwargs):
-        """ call super for init generell slots, init sepcial slots for teststeps
+        """ call super for init general slots, init special slots for teststeps
             and define special positional arg settings """
 
         kwargs['allow_none'] = True
@@ -312,7 +312,7 @@ class TestlinkAPIClient(TestlinkAPIGeneric):
         return (posArgValues, newArgItems)
 
     #
-    #  ADDITIONNAL FUNCTIONS- keywords
+    #  ADDITIONAL FUNCTIONS- keywords
     #
 
     def listKeywordsForTC(self, internal_or_external_tc_id):
@@ -534,8 +534,7 @@ class TestlinkAPIClient(TestlinkAPIGeneric):
                     if 'keywords' in testfile_class.testlink_params:
                         self.addTestCaseKeywords(
                             {testfile_class.testlink_params['project_prefix'] +
-                             response[0]['additionalInfo'][
-                                 'external_id']:
+                             response[0]['additionalInfo']['external_id']:
                                  testfile_class.testlink_params['keywords']})
                 i += 1
         return i
@@ -546,28 +545,30 @@ class TestlinkAPIClient(TestlinkAPIGeneric):
         testSuite['tree_path'] = tree_path
         testSuite['project_name'] = testSuite['tree_path'][0]
         testSuite['tree_path'].pop(0)
-        # Delete the project_name form the tree path since it isn't a top_level_folder
-        testSuite['ClassData'] = (
-            re.search("(#.*\n?)+\nclass\s*\w*", file_contents).group(0).split('class '))
-        testSuite['Summary'] = testSuite['ClassData'][0].lstrip().replace('#', '').replace('\n', '')
+        # Delete the project_name from the tree path since it isn't a top_level_folder
+        #
+        # This is the old method --- it is looking for a comment line above the test def. Keeping it for reference.
+        # # testSuite['ClassData'] = (re.search("(#.*\n?)+\nclass\s*\w*", file_contents).group(0).split('class '))
+        # # testSuite['Summary'] = testSuite['ClassData'][0].lstrip().replace('#', '').replace('\n', '')
+        # # testcaseStrings = re.findall(
+        # #            "((((# .*)\n)\t?(....)?)+(#\n\t?(....)?)(((# .*)\n\t?)(....)?)+(def test(_\w*)))", file_contents)
+        #
+        # This is the new method --- it is looking for a block comment below the def.
+        testSuite['ClassData'] = (re.search("class\s*\w*\(NgifcHelper\)\:\n\s*\"\"\".*\"\"\"", file_contents).group(0).split('class '))
+        testSuite['Summary'] = testSuite['ClassData'][1].lstrip().split('"""')[1]
         testSuite['Name'] = re.search('class \w+', file_contents).group(0).split(" ")[1]
-        testcaseStrings = re.findall(
-            "((((# .*)\n)\t?(....)?)+(#\n\t?(....)?)(((# .*)\n\t?)(....)?)+(def test(_\w*)))",
-            file_contents)
+        # TODO: Fix this regex
+        testcaseStrings_name = re.findall("def test_\w*\(self\)\:", file_contents)
+        testcaseStrings_desc = re.findall("def test_\S*\n\t*\"\"\"(.*)\"\"\"", file_contents)
         testSuite['testCases'] = []
-        for testCase in testcaseStrings:
+        i = 0
+        for testCase in testcaseStrings_desc:
             case = {}
-            temp = re.split('(#\n\t?(..)?)', testCase[0])
-            temp1 = re.split(r'(def test(_\w*))', temp[3])
-            name = temp1[1].replace('def ', '').replace('\n', '')
-            actions = re.sub(r'\s+', ' ',
-                             temp[0].replace('# ', '').replace('\n', '').replace('#', ''))
-            expected = re.sub(r'\s+', ' ',
-                              temp1[0].replace('Expected: ', '').replace('#', '').replace('\n', ''))
-            case['steps'] = [{'step_number': 1, 'actions': actions, 'expected_results': expected,
+            case['steps'] = [{'step_number': 1, 'actions': testCase, 'expected_results': '',
                               'execution_type': 2}]
-            case['name'] = name
+            case['name'] = testcaseStrings_name[i].replace('def ', '').replace('(self):', '')
             testSuite['testCases'].append(case)
+            i +=1
         return testSuite
 
     def getOrCreateTestSuite(self, project_id, testSuite):

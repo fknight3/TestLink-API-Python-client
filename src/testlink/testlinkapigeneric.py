@@ -1472,7 +1472,7 @@ TL version >= 1.9.11
     def getTestCaseKeywords(self):
         """ Gets a dictionary of keywords for a given Test case 
         
-        args variations: testcaseid - testcaseexternalid  (mandatoy!)
+        args variations: testcaseid - testcaseexternalid  (mandatory!)
          
         returns an empty dictionary, if no keywords are defined """
         

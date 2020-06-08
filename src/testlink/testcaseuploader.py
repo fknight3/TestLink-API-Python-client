@@ -41,8 +41,7 @@ def call_test_link_api(file_path):
     sys.path.append(os.path.split(file_path)[0])
     test_file_path = os.path.split(file_path)[1].split('.py')[0]
     imported_test_file = __import__(test_file_path)
-    test_class_name = test_file_path.replace('test', 'Tc').replace('_', ' ').title().replace(
-        ' ', '')
+    test_class_name = test_file_path.replace('test', 'Tc').replace('_', ' ').title().replace(' ', '')
     tls = testlink.TestLinkHelper().connect(testlink.TestlinkAPIClient)
     count_cases_uploaded = tls.bulkTestCaseUpload(getpass.getuser(), file_path,
                                                   getattr(imported_test_file, test_class_name))
